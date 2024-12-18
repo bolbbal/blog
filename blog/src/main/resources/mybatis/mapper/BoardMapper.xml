@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.BoardMapper">
+    
+    <sql id="criteria">
+        <choose>
+            <when test="type == 'title'.toString()">(title LIKE CONCAT('%', #{keyword}, '%')) AND </when>
+            <when test="type == 'content'.toString()">(content LIKE CONCAT('%', #{keyword}, '%')) AND </when>
+            <when test="type == 'writer'.toString()">(writer LIKE CONCAT('%', #{keyword}, '%')) AND </when>
+            <otherwise> 1=1 </otherwise>
+        </choose>
+    </sql>
+
+    <!-- useGeneratedKeys="true" bno 자동 반환 keyProperty="bno" 속성으로 BoardVo 객체의 bno 필드에 값 저장 -->
+    <insert id="insertSelectKey" useGeneratedKeys="true" keyProperty="bno">
+        INSERT INTO tbl_board (title, content, writer) VALUES (#{title}, #{content}, #{writer})
+    </insert>
+    
+    <select id="getList" resultType="com.blog.domain.BoardVo">
+        <![CDATA[
+	    SELECT 
+	        bno, title, content, writer, regdate, updatedate
+	    FROM 
+	        tbl_board
+	    WHERE 
+	    ]]>
+	        <include refid="criteria"/>
+	    <![CDATA[
+	    ORDER BY 
+	        bno DESC
+	    LIMIT #{amount} OFFSET #{offset}
+	    ]]>
+    </select>
+    
+    <select id="getListPaging" resultType="com.blog.domain.BoardVo">
+        SELECT 
+	        bno, title, content, writer, regdate, updatedate
+	    FROM tbl_board
+	    WHERE
+	        <include refid="criteria"/>
+	    ORDER BY bno DESC
+	    
+	    <!-- LIMIT #{amount} OFFSET #{offset} -->
+    </select>
+    
+    <select id="getBoardCount" resultType="int">
+        SELECT COUNT(*) AS count FROM tbl_board
+    </select>
+    
+    <select id="getBoardCountPaging" resultType="int">
+        SELECT 
+            COUNT(*) AS count
+        FROM 
+            tbl_board
+        WHERE
+            <include refid="criteria"/>
+            and bno > 0
+    </select>
+    
+    <select id="getDetail" resultType="com.blog.domain.BoardVo">
+        SELECT * FROM tbl_board WHERE bno = #{bno}
+    </select>
+    
+    <select id="getNext" resultType="com.blog.domain.BoardVo">
+        <![CDATA[
+        SELECT * 
+        FROM tbl_board 
+        WHERE bno > #{bno} 
+        ORDER BY bno ASC 
+        LIMIT 1
+        ]]>
+    </select>
+
+    <select id="getPrev" resultType="com.blog.domain.BoardVo">
+        <![CDATA[
+        SELECT * 
+        FROM tbl_board 
+        WHERE bno < #{bno} 
+        ORDER BY bno DESC 
+        LIMIT 1
+        ]]>
+    </select>
+    
+    <update id="updateBoard">
+        UPDATE tbl_board 
+        SET 
+            title = #{title}, 
+            content = #{content}, 
+            updatedate = NOW() 
+        WHERE bno = #{bno}
+    </update>
+    
+    <delete id="deleteBoard">
+        DELETE FROM tbl_board WHERE bno = #{bno}
+    </delete>
+    
+</mapper>

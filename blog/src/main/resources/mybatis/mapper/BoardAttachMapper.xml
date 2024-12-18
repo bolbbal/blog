@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.BoardAttachMapper">
+
+	<insert id="insert" parameterType="com.blog.domain.BoardAttachVo">
+		insert into tbl_attach (uuid, uploadpath, ceoImg, filename, uploadfile, bno) values (#{uuid}, #{uploadpath}, #{ceoImg}, #{filename}, #{uploadfile}, #{bno})
+	</insert>
+	
+	<select id="findByBno" resultType="com.blog.domain.BoardAttachVo">
+		select * from tbl_attach where bno = #{bno}
+	</select>
+	
+	<delete id="deleteAll" parameterType="long">
+		delete tbl_attach where bno = #{bno}	
+	</delete>
+
+</mapper>

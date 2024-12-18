@@ -1,0 +1,171 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout=http://www.ultraq.net.nz/thymeleaf/layout
+	layout:decorate="~{layouts/layout}">
+
+	<div layout:fragment="content">
+
+	
+	<!-- sub contents -->
+	<div class="sub_title">
+		<h2>포트폴리오</h2>
+		<div class="container">
+		  <div class="location">
+			<ul>
+				<li class="btn_home">
+					<a href="index.html"><i class="fa fa-home btn_plus"></i></a>
+				</li>
+				<li class="dropdown">
+					<a href="">포트폴리오<i class="fa fa-plus btn_plus"></i></a>
+					<div class="dropdown_menu">
+						<a href="../about/gratings.html">기업소개</a>
+						<a href="../portfolio/portfolio.html">포트폴리오</a>
+						<a href="../notice/notice.html">커뮤니티</a>
+					</div>
+				</li>
+				<li class="dropdown">
+					<a href="">포트폴리오<i class="fa fa-plus btn_plus"></i></a>
+					<div class="dropdown_menu">
+						<a href="portfolio.html">포트폴리오</a>
+					</div>
+				</li>
+			</ul>
+		  </div>
+		</div><!-- container end -->
+	</div>
+
+	<div class="container">
+	  <div class="search_wrap">
+		<div class="record_group">
+			<p>총게시글<span th:text="${count}"></span>건</p>
+		</div>
+		<div class="search_group">
+			<form name="myform" method="get" action="/port/list.do">
+				<select name="type" class="select">
+					<!-- <option value="title" ${page.cri.type.equals('title')?'selected':'' }>제목</option>
+					<option value="content" ${page.cri.type.equals('content')?'selected':'' }>내용</option>
+					<option value="writer" ${page.cri.type.equals('writer')?'selected':'' }>글쓴이</option> -->
+				</select>
+				<input type="text" name="keyword" class="search_word" value="${page.cri.keyword}">
+				<button class="btn_search"><i class="fa fa-search"></i><span class="sr-only">검색버튼</span></button>
+			</form>
+		</div>
+	  </div> <!-- search end -->
+	  <div class="bord_list">
+		<ul class="basic_board">
+			<li th:each="blog : ${list}">
+				<span class="date" th:if="${blog.regdate != null}">
+					<em th:text="${#temporals.format(blog.regdate, 'dd')}"></em>
+					<span th:text="${#temporals.format(blog.regdate, 'yyyy-MM')}"></span>
+				</span>
+				<div class="text_wrap">
+					<div class="img_wrap">
+						<th:block th:each="imgList, status:${blog.attachList}">
+							<img th:if="${!imgList.ceoImg.equals('null')}" 
+							 	th:src="@{'/photo/' + ${imgList.uploadpath} + '/' + ${imgList.uuid} + '_' + ${imgList.ceoImg}}" alt="블로그 이미지">
+					</div>
+					<!-- 첨부 이미지 목록 -->
+	                   <div>
+	                       <th:block th:each="imgList, status:${blog.attachList}">
+	                       <img th:if="${imgList.ceoImg.equals('null')}"
+	                       		th:src="@{'/photo/' + ${imgList.uploadpath} + '/' + ${imgList.uuid} + '_' + ${imgList.filename}}"
+	                                alt="첨부 이미지" style="width: 10%;" class="smallimg">
+	                   </div>
+					<span class="info">
+						<span class="blue_text" th:text="NO.+${blog.bno}"></span>
+						<i class="bar"></i>
+						<i class="fa fa-eye"></i> 214
+					</span>
+					<p class="title">
+						<a th:href="@{/port/view.do(bno=${blog.bno})}" th:text="${blog.title}"></a>
+					</p>
+					<span class="text" th:text="${blog.content}"></span>
+					<a id="downloadButton" 
+					   th:if="${!#lists.isEmpty(blog.attachList)}" 
+					   th:data-filename="${blog.attachList[0].uploadfile}" 
+					   style="background: #00f; color: #fff; display: inline-block; padding: 6px 12px; cursor: pointer;">
+					   다운로드
+					</a>
+				</div>
+			</li>
+		</ul>
+		
+		<div class="paging">
+         <div th:if="${pageMaker.total > 0}">
+            <!-- 이전 페이지 링크 -->
+            <div th:if="${pageMaker.prev}">
+               <a    th:href="@{/port/list.do(pageNum=${pageMaker.startPage - 1}, amount=10, type=${pageMaker.cri.type}, keyword=${pageMaker.cri.keyword})}">
+                  <i class="fa fa-angle-double-left"></i>
+               </a>
+            </div>
+
+            <!-- 페이지 번호 반복 -->
+            <th:block th:each="page : ${#numbers.sequence(pageMaker.startPage, pageMaker.endPage)}">
+               <a    th:href="@{/port/list.do(pageNum=${page}, amount=${pageMaker.cri.amount}, type=${pageMaker.cri.type}, keyword=${pageMaker.cri.keyword})}"
+                  th:classappend="${pageMaker.cri.pageNum == page} ? 'active'">
+                  <span th:text="${page}"></span>
+               </a>
+            </th:block>
+
+            <!-- 다음 페이지 링크 -->
+            <div th:if="${pageMaker.next}">
+               <a th:href="@{/port/list.do(pageNum=${pageMaker.endPage + 1}, amount=10, type=${pageMaker.cri.type}, keyword=${pageMaker.cri.keyword})}">
+                  <i class="fa fa-angle-double-right"></i>
+               </a>
+            </div>
+            
+         </div>
+         <a href="/port/write.do" class="btn_write">글쓰기</a>
+         </div>
+         <div th:if="${pageMaker.total == 0}">
+             <p>게시글이 없습니다.</p>
+         </div>
+         
+         
+      </div>
+      
+	  </div>
+	  <script layout:script="">
+		$(function() {
+			$(".location  .dropdown > a").on("click",function(e) {
+				e.preventDefault();
+				if($(this).next().is(":visible")) {
+					$(".location  .dropdown > a").next().hide();
+				} else {
+					$(".location  .dropdown > a").next().hide();
+					$(this).next().show();
+				}
+			});
+			
+			$(document).on('click', '#downloadButton', function() {
+			    var filename = $(this).data('filename'); // data-filename 속성에서 파일 이름 가져오기
+
+			    if (!filename) {
+			        alert("파일 정보가 없습니다.");
+			        return;
+			    }
+			    console.log("1");
+			    // 다운로드 요청
+			    window.location.href = '/port/download.do?filename=' + encodeURIComponent(filename);
+			});
+
+
+			
+		});
+	</script>
+	</div>
+	<!-- end contents -->
+	
+	
+	
+
+</html>
+
+
+
+
+
+
+
+
+

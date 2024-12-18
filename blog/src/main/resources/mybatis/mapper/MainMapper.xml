@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.mapper.MainMapper">
+	
+	<select id="getList" resultType="com.blog.domain.BoardVo">
+		select * from tbl_board order by bno desc LIMIT 3
+	</select>
+	
+	<select id="findByBno" resultType="com.blog.domain.BoardAttachVo">
+		select * from tbl_attach where bno = #{bno}
+	</select>
+	
+</mapper>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h2 th:text="${'こんにちは、世界！'}"></h2>
+	<div>
+		番号 : <span th:text="${notice.idx}"></span>
+	</div>
+	<div>
+		タイトル : <span th:text="${notice.title}"></span>
+	</div>
+	<div>
+		内容 : <span th:text="${notice.content}"></span>
+	</div>
+	<div>
+		筆者 : <span th:text="${notice.writer}"></span>
+	</div>
+</body>
+</html>

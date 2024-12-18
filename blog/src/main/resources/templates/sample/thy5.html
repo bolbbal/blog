@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http:thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>Thymeleaf link</h1>
+	<div>
+		<a th:href="@{http://thymeleaf.org}">Thymeleaf Page</a>
+	</div>
+	<div>
+		<a th:href="@{/thy/ex4}">Thymeleaf Example Page</a>
+	</div>
+	<div>
+		<a th:href="@{/thy/ex6(param1='data1', param2='data2')}">Parameter send</a>
+	</div>
+</body>
+</html>

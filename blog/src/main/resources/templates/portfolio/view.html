@@ -1,0 +1,295 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout=http://www.ultraq.net.nz/thymeleaf/layout
+	layout:decorate="~{layouts/layout}">
+
+	<th:block layout:fragment="css">
+	   <style>
+	      .reply {border-top:1px solid #ccc; margin:30px 0;}
+	      .reply h2 {padding:20px 0; font-size:22px;}
+	      .reply textarea {padding:16px; display:inline-block;
+	         width:83%; height:130px; border:1px solid #ccc;
+	         vertical-align:top;}
+	      .reply button {height:130px; border:1px solid #ccc;
+	         background:#f78181; display:inline-block; width:10%;
+	         color:#fff;}
+	      .reply ul li {line-height:240%; border-bottom:1px solid #ccc;}
+	      
+	   </style>
+	</th:block>
+
+	<div layout:fragment="content">
+	<!-- sub contents -->
+	<div class="sub_title">
+		<h2>포트폴리오</h2>
+		<div class="container">
+		  <div class="location">
+			<ul>
+				<li class="btn_home">
+					<a href="index.html"><i class="fa fa-home btn_plus"></i></a>
+				</li>
+				<li class="dropdown">
+					<a href="">포트폴리오<i class="fa fa-plus btn_plus"></i></a>
+					<div class="dropdown_menu">
+						<a href="../about/gratings.html">기업소개</a>
+						<a href="../portfolio/portfolio.html">포트폴리오</a>
+						<a href="../notice/notice.html">커뮤니티</a>
+					</div>
+				</li>
+				<li class="dropdown">
+					<a href="">포트폴리오<i class="fa fa-plus btn_plus"></i></a>
+					<div class="dropdown_menu">
+						<a href="portfolio.html">포트폴리오</a>
+					</div>
+				</li>
+			</ul>
+		  </div>
+		</div><!-- container end -->
+	</div>
+
+	<div class="container">
+		<div class="board_view" id="blog" th:attr="data-id=${view.bno}">
+			<h2 th:text="${view.title}"></h2>
+			<p class="info"><span class="user" th:text="${view.writer}"></span> | [[${view.regdate}]] | <i class="fa fa-eye"></i> 321</p>
+			<div class="board_body">
+				<p th:text="${view.content}"></p>
+				<th:block th:each="ceo, status:${view.attachList}">
+					<img th:if="${!ceo.ceoImg.equals('null')}"
+						 th:src="@{'/photo/' + ${ceo.uploadfile}}">
+				</th:block>
+				<th:block th:each="img, status:${view.attachList}">
+					<img th:if="${img.ceoImg.equals('null')}"
+						 th:src="@{'/photo/' + ${img.uploadfile}}">
+				</th:block>
+
+			</div>
+			<div class="prev_next">
+				<a th:if="${prev != null}"
+					th:href="@{/port/view.do(bno=${prev.bno})}" class="btn_prev"><i class="fa fa-angle-left"></i>
+				<span class="prev_wrap">
+					<strong>이전글</strong><span th:text="${prev.title}"></span>
+				</span>
+				</a>
+				<a th:if="${prev == null}"
+					th:href="@{/port/view.do(bno=${view.bno})}" class="btn_prev"><i class="fa fa-angle-left"></i>
+				<span class="prev_wrap">
+					<strong>이전글</strong><span>이전 글이 없습니다.</span>
+				</span>
+				</a>
+				<div class="btn_3wrap">
+					<a href="portfolio.html">목록</a> <a href="portfolio_modify.html">수정</a> <a href="portfolio_delete.html" onClick="return confirm('삭제하시겠어요?')">삭제</a>
+				</div>
+				<a th:if="${next != null}"
+					th:href="@{/port/view.do(bno=${next.bno})}" class="btn_next">
+				<span class="next_wrap">
+					<strong>다음글</strong><span th:text="${next.title}"></span>
+				</span>
+				<i class="fa fa-angle-right"></i></a>
+				<a th:if="${next == null}"
+					th:href="@{/port/view.do(bno=${view.bno})}" class="btn_next">
+				<span class="next_wrap">
+					<strong>다음글</strong><span>다음 글이 없습니다.</span>
+				</span>
+				<i class="fa fa-angle-right"></i></a>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+      <div class="reply">
+         <h2><i class="fa fa-comments"></i> Comments <span id="count" th:text="${commentCount}">0</span></h2>
+         <div class="replyform">
+            <textarea name="com_content" id="com_content"></textarea>
+            <button id="comment_register" style="cursor:pointer" sec:authorize="isAuthenticated()" onclick="registerComment()">댓글등록</button>
+             <button style="cursor:pointer" sec:authorize="isAnonymous()" onclick="alert('로그인 후 댓글을 등록할 수 있습니다.')">댓글등록</button>
+         </div>
+         <div class="replylist">
+            <ul id="comment_box">
+            <th:block th:each="comment : ${comments}">
+               <li>
+                  Writer : <span th:text="${comment.com_writer}"></span> | RegDate : <span th:text="${#temporals.format(comment.com_regdate, 'yyyy-MM-dd')}"></span></span>
+                  <p th:text="${comment.com_content}"></p>
+                  <span class='delete' style="cursor:pointer" th:attr="data-com_bno=${comment.com_bno}">[삭제]</span>
+                  <span class='update' style="cursor:pointer" th:attr="data-com_bno=${comment.com_bno}">[수정]</span>
+               </li>
+            </th:block>
+            </ul>
+         </div>
+      </div>
+   </div>
+
+	<!-- end contents -->
+	
+	<script>
+	   
+	   function registerComment() {
+	       const content = $('#com_content').val();  // 댓글 내용 가져오기
+	       const blogId = $('#blog').data('id');  // blogId를 <div id="blog" data-id="...">에서 가져오기
+	       
+	       // CSRF 토큰 가져오기
+	       const csrfToken = $('meta[name="_csrf"]').attr('content');
+	       const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+	       
+	       // Ajax 요청으로 댓글 등록
+	       $.ajax({
+	           url: '/comment/add',
+	           method: 'POST',
+	           contentType: 'application/json',
+	           headers: {
+	               [csrfHeader]: csrfToken,  // CSRF 헤더 추가
+	           },
+	           data: JSON.stringify({
+	               com_content: content,
+	               bno: blogId
+	           }),
+	           success: function(data) {
+	               // 댓글 목록에 새 댓글 추가
+	               const newComment = `
+	               <li>Writer: ${data.com_writer} | RegDate: ${data.com_regdate} 
+	               <p>${data.com_content}</p>
+	               <span class='delete' style="cursor:pointer" data-com_bno="${data.com_bno}">[삭제]</span>
+	               <span class='update' style="cursor:pointer" data-com_bno="${data.com_bno}">[수정]</span>
+	               </li>`;
+	               $('#comment_box').append(newComment);
+	               //prepend는 지정된 요소의 첫 번째 자식 요소로 콘텐츠를 추가하는 역할을 합니다.
+	              // 댓글 목록 초기화
+	             $('#com_content').val("");
+	               
+	               // 댓글 개수 업데이트
+	               const currentCount = parseInt($('#count').text());
+	               $('#count').text(currentCount + 1);  // 댓글 개수 증가
+	           },
+	           error: function(xhr, status, error) {
+	               console.error('댓글 등록 실패:', error);
+	           }
+	       });
+	   }
+	   
+	   $(document).on('click', '.update', function () {
+	       const com_bno = $(this).data('com_bno'); // 댓글 번호 가져오기
+	       const currentContent = $(this).closest('li').find('p').text(); // 기존 댓글 내용 가져오기
+
+	       // 모달의 텍스트 영역에 기존 댓글 내용 설정
+	       $('#editContent').val(currentContent);
+
+	       // 저장 버튼에 댓글 번호 데이터 설정
+	       $('#saveEdit').data('com_bno', com_bno);
+
+	       // 모달 표시
+	       $('#editModal').modal('show');
+	   });
+
+	   // 저장 버튼 클릭 시 수정 내용 전송
+	$(document).on('click', '#saveEdit', function () {
+	    const com_bno = $(this).data('com_bno'); // 댓글 번호 가져오기
+	    const newContent = $('#editContent').val(); // 수정된 내용 가져오기
+
+	    // CSRF 토큰 가져오기
+	    const csrfToken = $('meta[name="_csrf"]').attr('content');
+	    const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+
+	    // AJAX 요청으로 서버에 수정된 데이터 전송
+	    $.ajax({
+	        url: '/comment/update', // 서버 API URL
+	        method: 'PUT', // 수정 요청 (PUT)
+	        contentType: 'application/json', // JSON 형식으로 전송
+	        data: JSON.stringify({ com_bno: com_bno, com_content: newContent }),
+	        beforeSend: function (xhr) {
+	            xhr.setRequestHeader(csrfHeader, csrfToken); // CSRF 헤더 추가
+	        },
+	        success: function () {
+	            alert("댓글이 수정되었습니다.");
+	            
+	            // UI에 수정된 내용 반영
+	            $(`span.update[data-com_bno="${com_bno}"]`).closest('li').find('p').text(newContent);
+
+	            // 모달 닫기
+	            $('#editModal').modal('hide');
+	        },
+	        error: function (xhr, status, error) {
+	            console.error("댓글 수정 실패:", error);
+	            alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
+	        }
+	    });
+	});
+	   
+	   $(document).on('click', '.delete', function() {
+	       const com_bno = $(this).data('com_bno'); // 댓글 번호 가져오기
+
+	       const csrfToken = $('meta[name="_csrf"]').attr('content');
+	       const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+	       
+	       if (confirm("댓글을 삭제하시겠습니까?")) { // 삭제 확인
+	           $.ajax({
+	               url: `/comment/delete/${com_bno}`,
+	               method: 'DELETE',
+	               beforeSend: function(xhr) {
+	                   xhr.setRequestHeader(csrfHeader, csrfToken); // CSRF 헤더 추가
+	               },
+	               success: function() {
+	                   alert("댓글이 삭제되었습니다.");
+	                   $(`span.delete[data-com_bno="${com_bno}"]`).closest('li').remove(); // 댓글 삭제
+	                   const currentCount = parseInt($('#count').text());
+		               $('#count').text(currentCount - 1);
+	               },
+	               error: function(xhr, status, error) {
+	                   console.error("Error Status:", xhr.status); // 상태 코드 출력
+	                   console.error("Error Response:", xhr.responseText); // 응답 내용 출력
+	                   if (xhr.status === 401) {
+	                       alert("로그인이 필요합니다.");
+	                   } else if (xhr.status === 403) {
+	                       alert("삭제 권한이 없습니다.");
+	                   } else if (xhr.status === 404) {
+	                       alert("댓글을 찾을 수 없습니다.");
+	                   } else {
+	                       alert("댓글 삭제 중 오류가 발생했습니다.");
+	                   }
+	               }
+	           });
+	       }
+	   });
+	
+		$(function() {
+			$(".location  .dropdown > a").on("click",function(e) {
+				e.preventDefault();
+				if($(this).next().is(":visible")) {
+					$(".location  .dropdown > a").next().hide();
+				} else {
+					$(".location  .dropdown > a").next().hide();
+					$(this).next().show();
+				}
+			});
+		});
+	</script>
+	
+	<!-- Bootstrap Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">댓글 수정</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <textarea id="editContent" class="form-control"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+        <button type="button" id="saveEdit" class="btn btn-primary">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+	
+	</div>
+</html>
+
+
+
+
+
+
+
+
+

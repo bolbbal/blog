@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h2 th:text="${'繰り返し'}"></h2>
+	<table>
+		<tr th:each="notice, status:${list}">
+			<td th:text="${notice.idx}"> </td>
+			<td th:text="${notice.title}"> </td>
+			<td th:text="${notice.content}"> </td>
+			<td th:text="${notice.writer}"> </td>
+		</tr>
+	</table>
+	<th:block th:each="notice, status:${list}">
+		<span>[[${notice.idx}]] </span>
+		<span><a th:href="@{/thy/ex5(idx=${notice.idx})}">[[${notice.title}]]</a> </span>
+		<span>[[${notice.content}]] </span>
+		<span>[[${notice.writer}]] </span>
+		<p></p>
+	</th:block>
+</body>
+</html>
